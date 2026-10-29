@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>壓力和復原力（韌力）｜15 題選擇題</title>
+<style>
+:root {
+  --bg: #f4f7fb; --card: #ffffff; --text: #1e293b; --muted: #64748b;
+  --accent: #2563eb; --accent-light: #dbeafe; --border: #dbe3ee;
+  --correct: #166534; --correct-bg: #dcfce7; --wrong: #991b1b; --wrong-bg: #fee2e2;
+}
+* { box-sizing: border-box; }
+body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", "PingFang TC", sans-serif; background: var(--bg); color: var(--text); line-height: 1.65; }
+header { background: linear-gradient(135deg, #1d4ed8, #0f766e); color: white; padding: 30px 18px 26px; }
+.header-inner, main { max-width: 900px; margin: 0 auto; }
+h1 { font-size: clamp(1.5rem, 4vw, 2.2rem); line-height: 1.3; margin: 0 0 8px; }
+header p { margin: 0; opacity: .92; }
+main { padding: 22px 14px 48px; }
+.toolbar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.progress-wrap { flex: 1; min-width: 220px; }
+.progress-label { display:flex; justify-content:space-between; color: var(--muted); font-size: .92rem; margin-bottom: 6px; }
+.progress { height: 9px; background: #e2e8f0; border-radius: 999px; overflow: hidden; }
+.progress > div { height: 100%; width: 0; background: var(--accent); transition: width .2s; }
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 22px; margin: 14px 0; box-shadow: 0 3px 12px rgba(15,23,42,.04); }
+.q-head { display:flex; align-items:flex-start; gap: 12px; margin-bottom: 14px; }
+.q-number { flex: 0 0 38px; height: 38px; border-radius: 12px; background: var(--accent-light); color: #1d4ed8; display:grid; place-items:center; font-weight: 800; }
+.question { font-size: 1.08rem; font-weight: 700; padding-top: 3px; }
+.options { display:grid; gap: 9px; }
+.option { display:flex; gap: 10px; align-items:flex-start; border: 1px solid var(--border); border-radius: 11px; padding: 11px 13px; cursor:pointer; transition: background .15s, border-color .15s; }
+.option:hover { background: #f8fafc; border-color: #93c5fd; }
+.option input { margin-top: 5px; accent-color: var(--accent); }
+.option:has(input:checked) { border-color: var(--accent); background: #eff6ff; }
+.option.correct { border-color: #86efac; background: var(--correct-bg); }
+.option.incorrect { border-color: #fca5a5; background: var(--wrong-bg); }
+.explanation { display:none; margin-top: 13px; padding: 12px 14px; border-radius: 10px; background: #f1f5f9; font-size: .96rem; }
+.explanation.show { display:block; }
+.explanation strong { color: #0f766e; }
+.actions { display:flex; flex-wrap:wrap; gap: 10px; margin: 22px 0; }
+button { border: 0; border-radius: 11px; padding: 12px 18px; font-size: 1rem; font-weight: 700; cursor:pointer; }
+button.primary { background: var(--accent); color:white; }
+button.secondary { background: #e2e8f0; color: #334155; }
+button:hover { filter: brightness(.97); }
+button:focus-visible, input:focus-visible { outline: 3px solid #93c5fd; outline-offset: 2px; }
+#result { display:none; }
+#result.show { display:block; }
+.score { font-size: 2rem; font-weight: 850; color: #1d4ed8; }
+.result-note { color: var(--muted); }
+footer { color: var(--muted); text-align:center; padding: 0 14px 28px; font-size: .88rem; }
+@media (max-width: 560px) { .card { padding: 16px; } .q-number { flex-basis: 34px; height:34px; } }
+@media print {
+  body { background:white; } header { background:white; color:black; padding: 10px 0; }
+  main { padding: 0; } .card { box-shadow:none; break-inside:avoid; } .actions, .toolbar, footer { display:none; }
+  .explanation { display:block; } #result { display:block; }
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-inner">
+    <h1>壓力和復原力（韌力）</h1>
+    <p>Stress and Resilience｜15 題單選題</p>
+  </div>
+</header>
+<main>
+  <section class="toolbar" aria-label="作答進度">
+    <div class="progress-wrap">
+      <div class="progress-label"><span>作答進度</span><span id="progressText">已作答 0 / 15 題</span></div>
+      <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="15" aria-valuenow="0" id="progressBar"><div id="progressFill"></div></div>
+    </div>
+  </section>
+  <div id="quiz"></div>
+  <div class="actions">
+    <button class="primary" id="submitBtn">提交答案並查看解析</button>
+    <button class="secondary" id="resetBtn">重新作答</button>
+    <button class="secondary" id="printBtn">列印／另存 PDF</button>
+  </div>
+  <section class="card" id="result" aria-live="polite">
+    <h2>作答結果</h2>
+    <div class="score" id="scoreText"></div>
+    <p class="result-note" id="resultNote"></p>
+    <p id="unansweredText"></p>
+  </section>
+</main>
+<footer>本測驗供課程複習使用。題目依「壓力和復原力（韌力）」課程主題編寫。</footer>
+<script>
+const questions = [
+  {
+    q: "依據 Lazarus 與 Folkman 的認知評估理論，初級評估（primary appraisal）主要在判斷什麼？",
+    options: ["自己有哪些資源可以處理事件", "事件是否與自身福祉有關，以及它可能代表什麼", "事件發生後身體的心跳變化", "事件是否能立即被消除"],
+    answer: 1,
+    explanation: "初級評估是判斷事件與自身福祉的關聯及意義，例如是否屬於傷害／損失、威脅或挑戰；次級評估則更著重於「我能否應付？」"
+  },
+  {
+    q: "在壓力的次級評估（secondary appraisal）中，個體最主要考量的是什麼？",
+    options: ["這件事是否完全無關緊要", "事件是否已經發生過", "自己是否具有可用的因應資源與方法", "其他人是否也感到壓力"],
+    answer: 2,
+    explanation: "次級評估著重於個體對可用資源、因應選項與處理能力的評估，常可概括為「我能處理嗎？」"
+  },
+  {
+    q: "下列哪一項最符合「正向壓力／良性壓力（eustress）」的概念？",
+    options: ["壓力必然造成疾病", "任何壓力都應該完全避免", "適度挑戰可能促進投入與成長", "只有長期壓力才算壓力"],
+    answer: 2,
+    explanation: "Eustress 指可能被經驗為挑戰、促進投入或成長的壓力；相對地，distress 通常指令人困擾或感到威脅的壓力。"
+  },
+  {
+    q: "Walter Cannon（1932）提出的典型壓力反應是哪一種？",
+    options: ["Fight or flight（戰或逃）", "Tend and befriend（照顧與結盟）", "接受與承諾", "理解、管理與意義感"],
+    answer: 0,
+    explanation: "Cannon 的 fight-or-flight 描述面對威脅時的典型生理反應。Tend-and-befriend 與 Shelley Taylor 的相關論述有關。"
+  },
+  {
+    q: "Pete Walker（2013）所整理的 4F 壓力反應，不包含下列哪一項？",
+    options: ["Fight（戰）", "Flight（逃）", "Freeze（僵住）", "Focus（專注）"],
+    answer: 3,
+    explanation: "4F 通常指 Fight、Flight、Freeze、Fawn；Focus 並非其中一項。"
+  },
+  {
+    q: "復原力（resilience）最適合如何描述？",
+    options: ["永遠不感到壓力或挫折", "面對逆境時承受、調適並逐步恢復或適應的能力", "只靠意志力忽略所有困難", "避免向任何人尋求協助"],
+    answer: 1,
+    explanation: "復原力強調面對逆境或壓力時的適應、恢復與因應，不代表完全不受影響，也不等同於壓抑情緒。"
+  },
+  {
+    q: "Kobasa 的堅毅人格（hardiness）3C 不包含哪一項？",
+    options: ["Control（控制感）", "Commitment（投入／承諾）", "Challenge（挑戰）", "Comfort（舒適）"],
+    answer: 3,
+    explanation: "3C 是 Control、Commitment、Challenge。它們描述面對壓力時的控制感、投入程度，以及將變化視為挑戰的傾向。"
+  },
+  {
+    q: "Aaron Antonovsky 的健康生成論（salutogenesis）主要把焦點放在哪裡？",
+    options: ["只找出疾病的原因", "只測量症狀的嚴重程度", "探討人在壓力下如何維持或促進健康", "假設健康與疾病是完全固定的二分狀態"],
+    answer: 2,
+    explanation: "健康生成論將問題從「疾病如何產生」延伸至「人如何在壓力與困境中維持、促進健康」，並關注復原力與保護因子。"
+  },
+  {
+    q: "一致感（Sense of Coherence, SOC）的三個核心構面是什麼？",
+    options: ["速度、力量、耐力", "理解性、可管理性、意義感", "控制、投入、挑戰", "接受、解離、承諾行動"],
+    answer: 1,
+    explanation: "SOC 包含 comprehensibility（理解性）、manageability（可管理性）與 meaningfulness（意義感）。"
+  },
+  {
+    q: "下列哪一項最符合「問題焦點因應（problem-focused coping）」？",
+    options: ["規劃步驟並採取行動處理壓力源", "只反覆責怪自己", "透過幻想暫時不去想問題", "否認壓力源存在"],
+    answer: 0,
+    explanation: "問題焦點因應直接處理問題或改變壓力源，例如主動因應、計畫性解決問題，以及尋求工具性支持。"
+  },
+  {
+    q: "下列哪一項較屬於「情緒焦點因應（emotion-focused coping）」？",
+    options: ["列出解決問題的具體步驟", "向可信任的人尋求情緒支持", "重新安排工作流程以減少壓力源", "蒐集資料以比較不同解決方案"],
+    answer: 1,
+    explanation: "情緒焦點因應主要調節與壓力相關的情緒，例如尋求情緒支持、接納、正向重新評估或宗教因應。"
+  },
+  {
+    q: "關於因應（coping），下列哪一個敘述最恰當？",
+    options: ["只有成功解決問題才算因應", "因應只包含外顯行為，不包含認知努力", "因應是持續運用認知與行為努力，管理被評估為超出資源的要求", "因應的目標一定是完全控制外在環境"],
+    answer: 2,
+    explanation: "因應是動態的認知與行為努力；即使最後未能完全解決問題，過程中所做的努力仍可稱為因應。"
+  },
+  {
+    q: "Holmes 與 Rahe 的社會再適應評定量表（SRRS）主要用來評估什麼？",
+    options: ["個人的智力程度", "生活事件變化所帶來的調適負荷", "特定疾病的診斷結果", "日常活動的肌力需求"],
+    answer: 1,
+    explanation: "SRRS 將生活事件依其所需的調適程度賦予生活變化單位（LCU），用來估計一段時間內生活變化累積的壓力負荷。"
+  },
+  {
+    q: "接受與承諾治療（ACT）的重要目標之一是提升心理彈性（psychological flexibility）。這最接近哪一種做法？",
+    options: ["確保不再出現任何不舒服的想法", "即使有不舒服的經驗，仍能留在當下並採取符合價值的行動", "把所有負面情緒都視為失敗", "只要改變外在環境，不必考慮個人價值"],
+    answer: 1,
+    explanation: "ACT 重視接納內在經驗、與想法拉開距離、覺察當下，並依個人價值採取承諾行動，而非要求所有不舒服都消失。"
+  },
+  {
+    q: "Pennebaker 書寫介入（expressive writing）常見的基本安排為何？",
+    options: ["連續數天，每次約 15–20 分鐘，書寫困擾事件與深層感受", "每天只抄寫一段與自己無關的文章", "只用選擇題記錄身體症狀", "必須在團體中公開朗讀所有私人內容"],
+    answer: 0,
+    explanation: "課程介紹的 Pennebaker Protocol 常以連續四天、每次約 15–20 分鐘的書寫為例，聚焦困擾事件、想法與感受；書寫內容不必然需要公開分享。"
+  }
+];
+
+const quiz = document.getElementById('quiz');
+const progressText = document.getElementById('progressText');
+const progressFill = document.getElementById('progressFill');
+const progressBar = document.getElementById('progressBar');
+const result = document.getElementById('result');
+
+function renderQuiz() {
+  quiz.innerHTML = questions.map((item, i) => `
+    <section class="card question-card" data-question="${i}">
+      <div class="q-head">
+        <div class="q-number">${i + 1}</div>
+        <div class="question">${item.q}</div>
+      </div>
+      <div class="options">
+        ${item.options.map((option, j) => `
+          <label class="option" data-option="${j}">
+            <input type="radio" name="q${i}" value="${j}">
+            <span><strong>${String.fromCharCode(65 + j)}.</strong> ${option}</span>
+          </label>`).join('')}
+      </div>
+      <div class="explanation" id="explanation-${i}"></div>
+    </section>`).join('');
+  quiz.querySelectorAll('input[type="radio"]').forEach(input => input.addEventListener('change', updateProgress));
+  updateProgress();
+}
+function updateProgress() {
+  const answered = questions.filter((_, i) => quiz.querySelector(`input[name="q${i}"]:checked`)).length;
+  progressText.textContent = `已作答 ${answered} / ${questions.length} 題`;
+  progressFill.style.width = `${answered / questions.length * 100}%`;
+  progressBar.setAttribute('aria-valuenow', answered);
+}
+function submitQuiz() {
+  let score = 0, unanswered = 0;
+  questions.forEach((item, i) => {
+    const card = quiz.querySelector(`[data-question="${i}"]`);
+    const chosen = card.querySelector(`input[name="q${i}"]:checked`);
+    if (!chosen) unanswered++;
+    else if (Number(chosen.value) === item.answer) score++;
+    card.querySelectorAll('.option').forEach((label, j) => {
+      label.classList.remove('correct', 'incorrect');
+      if (j === item.answer) label.classList.add('correct');
+      if (chosen && j === Number(chosen.value) && j !== item.answer) label.classList.add('incorrect');
+    });
+    const exp = document.getElementById(`explanation-${i}`);
+    exp.innerHTML = `<strong>${chosen && Number(chosen.value) === item.answer ? '答對了！' : '正確答案：' + String.fromCharCode(65 + item.answer) + '。'}</strong> ${item.explanation}`;
+    exp.classList.add('show');
+  });
+  document.querySelectorAll('input[type="radio"]').forEach(input => input.disabled = true);
+  document.getElementById('scoreText').textContent = `${score} / ${questions.length} 分`;
+  const pct = Math.round(score / questions.length * 100);
+  let note = pct >= 90 ? '表現優良！你已掌握多數核心概念。' :
+             pct >= 70 ? '不錯！建議再複習答錯題目的解析。' :
+             '建議依照解析複習壓力評估、因應策略與復原力相關概念。';
+  document.getElementById('resultNote').textContent = `${pct}%｜${note}`;
+  document.getElementById('unansweredText').textContent = unanswered ? `尚有 ${unanswered} 題未作答；未作答題目以 0 分計。` : '已完成全部題目。';
+  result.classList.add('show');
+  document.getElementById('submitBtn').disabled = true;
+  result.scrollIntoView({behavior:'smooth', block:'start'});
+}
+function resetQuiz() {
+  renderQuiz();
+  document.querySelectorAll('input[type="radio"]').forEach(input => input.disabled = false);
+  document.getElementById('submitBtn').disabled = false;
+  result.classList.remove('show');
+  document.getElementById('scoreText').textContent = '';
+  document.getElementById('resultNote').textContent = '';
+  document.getElementById('unansweredText').textContent = '';
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+document.getElementById('submitBtn').addEventListener('click', submitQuiz);
+document.getElementById('resetBtn').addEventListener('click', resetQuiz);
+document.getElementById('printBtn').addEventListener('click', () => window.print());
+renderQuiz();
+</script>
+</body>
+</html>
